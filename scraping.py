@@ -102,44 +102,53 @@ def mars_facts():
 
 def hemispheres(browser):
     url = 'https://marshemispheres.com/'
-
-    browser.visit(url + 'index.html')
-
+    browser.visit(url)
+    html = browser.html
+    news_soup = soup(html, 'html.parser')
+    
+# Retreive all items that contain mars hemispheres information
+    results=news_soup.find_all('div', class_="collapsible results")
     # Click the link, find the sample anchor, return the href
+    # 2. Create a list to hold the images and titles.
+
     hemisphere_image_urls = []
+
+# 3. Write code to retrieve the image urls and titles for each hemisphere.
     for i in range(4):
-        # Find the elements on each loop to avoid a stale element exception
-        browser.find_by_css("a.product-item img")[i].click()
-        hemi_data = scrape_hemisphere(browser.html)
-        hemi_data['img_url'] = url + hemi_data['img_url']
-        # Append hemisphere object to list
-        hemisphere_image_urls.append(hemi_data)
-        # Finally, we navigate backwards
+        hemi_img_url={} 
+        browser.find_by_css('h3')[i].click()
+    #title
+        title_elem=results[0].find_all('h3')
+        title=title_elem[i].text
+    
+    # Visit the link that contains the full image website 
+        img_url_rel = results[0].find_all('img')[i]
+        link=img_url_rel.attrs['src']
+        hemi_img_url=url+link
+        hemisphere_image_urls.append({'title' : title, 'img_url' : hemi_img_url})
         browser.back()
 
     return hemisphere_image_urls
 
 
-def scrape_hemisphere(html_text):
-    # parse html text
-    hemi_soup = soup(html_text, "html.parser")
+# def scrape_hemisphere(html_text):
+ 
+#     # adding try/except for error handling
+#     try:
+#         title_elem = hemi_soup.find("h2", class_="title").get_text()
+#         sample_elem = hemi_soup.find("a", text="Sample").get("href")
 
-    # adding try/except for error handling
-    try:
-        title_elem = hemi_soup.find("h2", class_="title").get_text()
-        sample_elem = hemi_soup.find("a", text="Sample").get("href")
+#     except AttributeError:
+#         # Image error will return None, for better front-end handling
+#         title_elem = None
+#         sample_elem = None
 
-    except AttributeError:
-        # Image error will return None, for better front-end handling
-        title_elem = None
-        sample_elem = None
+#     hemispheres = {
+#         "title": title_elem,
+#         "img_url": sample_elem
+#     }
 
-    hemispheres = {
-        "title": title_elem,
-        "img_url": sample_elem
-    }
-
-    return hemispheres
+#     return hemispheres
 
 if __name__ == "__main__":
 
